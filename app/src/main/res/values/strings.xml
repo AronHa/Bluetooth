@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Bluetooth</string>
+    <string name="button">Send via Bluetooth</string>
+    <string name="text">Hello</string>
+</resources>
