@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">Bluetooth</string>
-    <string name="button">Send via Bluetooth</string>
     <string name="text">Hello</string>
+    <string name="options">Options</string>
+    <string name="file_name">File Name:</string>
+    <string name="save_file">Save File</string>
+    <string name="open_file">Open File</string>
+    <string name="bluetooth">Send via Bluetooth</string>
+    <string name="back">Back</string>
 </resources>

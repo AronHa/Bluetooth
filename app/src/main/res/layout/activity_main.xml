@@ -16,18 +16,38 @@
         android:fillViewport="false"
         android:layout_weight="1">
 
-        <EditText
+        <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="textMultiLine"
-            android:text="@string/text"
-            android:id="@+id/text" />
+            android:layout_height="match_parent">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="textMultiLine"
+                android:text=""
+                android:id="@+id/text" />
+
+        </HorizontalScrollView>
+
     </ScrollView>
 
-    <Button
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/button"
-        android:id="@+id/button"
-        android:layout_weight="0" />
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/save_file"
+            android:id="@+id/save"
+            android:layout_weight="1" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/back"
+            android:id="@+id/back"
+            android:layout_weight="1" />
+    </LinearLayout>
 </LinearLayout>

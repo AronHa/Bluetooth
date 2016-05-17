@@ -8,12 +8,7 @@ package aronharder.bluetooth;
  */
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -22,20 +17,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.util.List;
 
-//https://www.youtube.com/watch?v=6hQ87u9v7SY
 public class MainActivity extends Activity implements View.OnClickListener {
-    private static final int DISCOVER_DURATION = 300;
-    private static final int REQUEST_BLU = 1;
+    private String filename;
 
-    private BluetoothSocket btSocket;
     private EditText text;
-    private Button button;
+    private Button save;
+    private Button back;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,75 +38,66 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         text = (EditText) findViewById(R.id.text);
-        button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(this);
+        save = (Button) findViewById(R.id.save);
+        save.setOnClickListener(this);
+        back = (Button) findViewById(R.id.back);
+        back.setOnClickListener(this);
+
+        filename = getIntent().getStringExtra("File Name");
+        if (filename.equals(".rb")){
+            Toast.makeText(this,"No filename given",Toast.LENGTH_LONG).show();
+            finish();
+        } else {
+            Toast.makeText(this,filename,Toast.LENGTH_LONG).show();
+        }
+        loadFile();
     }
 
     public void onClick(View v){
+        switch (v.getId()){
+            case R.id.back:
+                Intent optsIntent = new Intent(getApplicationContext(),StartActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(optsIntent);
+                break;
+            case R.id.save:
+                saveFile();
+                break;
+        }
+    }
+
+    //http://www.mkyong.com/java/how-to-read-file-in-java-fileinputstream/
+    public void loadFile(){
+        File f = new File(Environment.getExternalStorageDirectory(), filename);
+        if (f.exists()) {
+            try {
+                String content = "";
+                FileInputStream fIn = new FileInputStream(f);
+                int n = fIn.read();
+                while (n != -1) {
+                    content+= (char) n;
+                    n = fIn.read();
+                }
+                text.setText(content);
+            } catch (IOException e) {
+                Log.e("ERROR", "Could not find file", e);
+            }
+        }
+    }
+
+    //http://stackoverflow.com/questions/8330276/write-a-file-in-external-storage-in-android
+    public void saveFile(){
         try {
-            File f = new File(Environment.getExternalStorageDirectory(), "filename.rb");
-            f.createNewFile();
+            File f = new File(Environment.getExternalStorageDirectory(), filename);
+            //f.createNewFile(); //Not needed?
             FileOutputStream fOut = new FileOutputStream(f);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
             myOutWriter.append(text.getText().toString());
             myOutWriter.close();
             fOut.close();
-
-            sendViaBluetooth(v);
+            Toast.makeText(this,"Saved",Toast.LENGTH_LONG).show();
         } catch (IOException e){
             Log.e("ERROR", "Could not create file",e);
-        }
-    }
-
-    public void sendViaBluetooth(View v){
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (btAdapter == null) {
-            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_LONG).show();
-        } else {
-            enableBluetooth();
-        }
-    }
-
-    public void enableBluetooth(){
-        Intent discoveryIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoveryIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, DISCOVER_DURATION);
-        startActivityForResult(discoveryIntent, REQUEST_BLU);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if (resultCode == DISCOVER_DURATION && requestCode == REQUEST_BLU) {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            File f = new File(Environment.getExternalStorageDirectory(), "filename.rb");
-            intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(f));
-
-            PackageManager pm = getPackageManager();
-            List<ResolveInfo> appsList = pm.queryIntentActivities(intent, 0);
-
-            if (appsList.size() > 0) {
-                String packageName = null;
-                String className = null;
-                boolean found = false;
-
-                for (ResolveInfo info : appsList) {
-                    packageName = info.activityInfo.packageName;
-                    if (packageName.equals("com.android.bluetooth")) {
-                        className = info.activityInfo.name;
-                        found = true;
-                        break;
-                    }
-                }
-                if (! found) {
-                    Toast.makeText(this, "Bluetooth hasn't been found", Toast.LENGTH_LONG).show();
-                } else {
-                    intent.setClassName(packageName, className);
-                    startActivity(intent);
-                }
-            }
-        } else {
-            Toast.makeText(this, "Bluetooth is cancelled", Toast.LENGTH_LONG).show();
         }
     }
 }
